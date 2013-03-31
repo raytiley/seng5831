@@ -54,9 +54,9 @@ Placing a 110ms busy wait into the yellow ISR caused the yellow to only toggle 5
 
 ##Question 5
 
-Placing a 510ms busy wait in the green ISR casued the menu to be unusable. It also caused the red LED not to blink at all, and the yellow to come on and stay on, no toggling. I imagine this is mostly due to the timing of when I issued the command to swith to a 2Hz period. Depending on what state the yellow and red leds are in when the period changes to 2Hz they will likely stay in those states since the green ISR is essentially using all the cpu.
+Placing a 510ms busy wait in the green ISR casued the menu to be unusable. It also caused the red LED not to blink at all, and the yellow to come on and stay on, no toggling. I imagine this is mostly due to the timing of when I issued the command to swith to a 2Hz period. Depending on what state the yellow and red leds are in when the period changes to 2Hz they will likely stay in those states since the green ISR is essentially using all the cpu. The green ISR is using all the cpu because it is getting triggered every 500ms but has 510ms worth of work to do. This blocks all other tasks on the system.
 
-With a 510ms busy wait in the yellow ISR the yellow only toggled once during a 60 second interval. The green LED continued to blink normally. The red LED did not blink at all. 
+With a 510ms busy wait in the yellow ISR the yellow only toggled once during a 60 second interval. The green LED continued to blink normally. The red LED did not blink at all. The yellow ISR is essentially now using all the CPU and blocking the red led. It is also blocking itself, so instead of the yellow ISR getting called 10 times a second, it is now only being called less then twice a second. This causes the `G_yellow_ticks` to not be incremented nearly as often as it should leading to dramatically less toggles of the yellow LED.
 
 ##Question 6
 

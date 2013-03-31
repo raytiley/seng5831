@@ -16,6 +16,9 @@ char receive_buffer[32];
 unsigned char receive_buffer_position;
 char send_buffer[32];
 
+char command_buffer[32];
+unsigned char command_position;
+
 // A generic function for whenever you want to print to your serial comm window.
 // Provide a string and the length of that string. My serial comm likes "\r\n" at 
 // the end of each string (be sure to include in length) for proper linefeed.
@@ -88,7 +91,7 @@ void process_received_string(const char* buffer)
 		// change toggle frequency for <color> LED
 		case 'T':
 		case 't':
-// >			//set_toggle(color,value);
+			set_toggle(color,value);
 			break; 
 		// print counter for <color> LED 
 		case 'P':
@@ -107,7 +110,7 @@ void process_received_string(const char* buffer)
 					print_usb( tempBuffer, length ); 
 					break;
 				case 'A': 
-					length = sprintf( tempBuffer, "Toggles R:%d G:%d Y:%d\r\n", G_red_toggles, G_green_toggles, G_yellow_toggles );
+					length = sprintf( tempBuffer, "Toggles R:%lu G:%lu Y:%lu\r\n", G_red_toggles, G_green_toggles, G_yellow_toggles );
 					print_usb( tempBuffer, length ); 
 					break;
 				default: print_usb("Default in p(color). How?\r\n", 27 );
@@ -153,6 +156,9 @@ void check_for_new_bytes_received()
 	*/ 
 	char menuBuffer[32];
 	static int received = 0;
+
+	int length;
+	char tempBuffer[2];
 	
 	// while there are unprocessed keystrokes in the receive_buffer, grab them and buffer
 	// them into the menuBuffer
@@ -175,25 +181,31 @@ void check_for_new_bytes_received()
 	}
 	// If there were keystrokes processed, check if a menue command
 	if (received) {
-		// if only 1 received, it was MOST LIKELY a carriage return. 
-		// Even if it was a single keystroke, it is not a menu command, so ignore it.
-		if ( 1 == received ) {
-			received = 0;
-			return;
-		}
-		// Process buffer: terminate string, process, reset index to beginning of array to receive another command
-		menuBuffer[received] = '\0';
-#ifdef ECHO2LCD
-		lcd_goto_xy(0,1);			
-		print("RX: (");
-		print_long(received);
-		print_character(')');
 		for (int i=0; i<received; i++)
 		{
-			print_character(menuBuffer[i]);
+			//If first character is $ or ! (start / execute) act accordingly
+			switch(menuBuffer[i]) {
+				case '$':
+					//Reset
+					print_usb("\r\nMenu: {TPZ} {RGYA} <int>: ", 28);
+					command_position = 0;
+					break;
+				case '!':
+					//Execute command
+					print_usb("!\r\n", 3);
+					command_buffer[command_position] = '\0';
+					process_received_string(command_buffer);
+					command_position = 0;
+					break;
+				default:
+					command_buffer[command_position] = menuBuffer[i];
+					command_position++;
+					length = sprintf( tempBuffer, "%c", menuBuffer[i]);
+					print_usb( tempBuffer, length );
+					break;
+			}
+
 		}
-#endif
-		process_received_string(menuBuffer);
 		received = 0;
 	}
 }
@@ -208,4 +220,3 @@ void wait_for_sending_to_finish()
 	while(!serial_send_buffer_empty(USB_COMM))
 		serial_check();		// USB_COMM port is always in SERIAL_CHECK mode
 }
-

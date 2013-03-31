@@ -13,3 +13,10 @@ I did however run this expierement before some changes to the menu code and obta
 This demonstrates exactly why you asked us not enter in any menu commands during the expierement. Since the menu is interupt driven it steals processing cycles away from the busy wait loop used to time the red LED. This in turn delays increases the WCET for the red LED task and causes it not to execute as often as it should.
 
 
+##Question 2
+
+Again timed with an iPhone all the outputs were within one toggle of each other.
+
+```terminal
+Toggles R:59 G:60 Y:59
+```

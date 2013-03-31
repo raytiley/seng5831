@@ -15,103 +15,91 @@ extern uint16_t G_yellow_period;
 extern uint16_t G_release_red;
 
 void init_timers() {
-/*
 	// -------------------------  RED --------------------------------------//
-	// Software Clock Using Timer/Counter 0.
-	// THE ISR for this is below.
 
-	// SET appropriate bits in TCCR....
-
-	// Using CTC mode with OCR0 for TOP. This is mode X, thus WGM0/1/0 = .
->
+	// Set mode to CTC
+	// WGM2 = 0
+	// WGM1 = 1
+	// WGM0 = 0
+	TCCR0A &= ~(0 << WGM00);
+	TCCR0A |= (1 << WGM01);
+	TCCR0B &= ~(0 << WGM02);
 	
-	// Using pre-scaler XX. This is CS0/2/1/0 = 
->
+	//Set the scaler to 256
+	// CS00 = 0
+	// CS01 = 0
+	// CS02 = 1
+	TCCR0B &= ~(0 << CS00);
+	TCCR0B &= ~(0 << CS01);
+	TCCR0B |= (1 << CS02);
 	
-	// Software Clock Interrupt Frequency: 1000 = f_IO / (prescaler*OCR0)
-	// Set OCR0 appropriately for TOP to generate desired frequency of 1KHz
-	printf("Initializing software clock to freq 1000Hz (period 1 ms)\n");	
->	OCR0 = ;
+	//Set Top
+	OCR0A = 78;
 
 	//Enable output compare match interrupt on timer 0A
->
+	TIMSK0 |= (1 << OCIE0A);
 
 	// Initialize counter
 	G_ms_ticks = 0;
-*/
 
 	//--------------------------- YELLOW ----------------------------------//
-	// Set-up of interrupt for toggling yellow LEDs. 
-	// This task is "self-scheduled" in that it runs inside the ISR that is 
-	// generated from a COMPARE MATCH of 
-	//      Timer/Counter 3 to OCR3A.
-	// Obviously, we could use a single timer to schedule everything, but we are experimenting here!
-	// THE ISR for this is in the LEDs.c file
 
-/*
-	// SET appropriate bits in TCCR ...
-
-	// Using CTC mode with OCR3A for TOP. This is mode XX, thus WGM1/3210 = .
->
+	// WGM30 = 0
+	// WGM31 = 0
+	// WGM32 = 1
+	// WGM33 = 0
+	TCCR3A &= ~(0 << WGM00);
+	TCCR3A &= ~(0 << WGM31);
+	TCCR3B |= (1 << WGM32);
+	TCCR3B &= ~(0 << WGM33);
 	
-	// Using pre-scaler XX. This is CS1_210 = 
->
-
-
-	// Interrupt Frequency: 10 = f_IO / (prescaler*OCR3A)
-	// Set OCR3A appropriately for TOP to generate desired frequency using Y_TIMER_RESOLUTION (100 ms).
-	// NOTE: This is not the toggle frequency, rather a tick frequency used to time toggles.
->	OCR3A = 
->	printf("Initializing yellow clock to freq %dHz (period %d ms)\n",(int)(XXX),Y_TIMER_RESOLUTION);	
+	// Using pre-scaler 1024
+	// CS30 = 1
+	// CS31 = 0
+	// CS32 = 1
+	TCCR3B |= (1 << CS30);
+	TCCR3B &= ~(0 << CS31);
+	TCCR3B |= (1 << CS32);
+	
+	// Set TOP
+	OCR3A = 195;
 
 	//Enable output compare match interrupt on timer 3A
->
+	TIMSK3 |= (1 << OCIE3A);
 
 	G_yellow_ticks = 0;
-*/
-/*
+
 	//--------------------------- GREEN ----------------------------------//
-	// Set-up of interrupt for toggling green LED. 
-	// This "task" is implemented in hardware, because the OC1A pin will be toggled when 
-	// a COMPARE MATCH is made of 
-	//      Timer/Counter 1 to OCR1A.
-	// We will keep track of the number of matches (thus toggles) inside the ISR (in the LEDs.c file)
-	// Limits are being placed on the frequency because the frequency of the clock
-	// used to toggle the LED is limited.
-
-	// Using CTC mode with OCR1A for TOP. This is mode XX, thus WGM3/3210 = .
->
-
-	// Toggle OC1A on a compare match. Thus COM1A_10 = 01
->
 	
-	// Using pre-scaler 1024. This is CS1/2/1/0 = XXX
->
+	// Set mode to CTC
+	TCCR1A &= ~(0 << WGM10);
+	TCCR1A &= ~(0 << WGM11);
+	TCCR1B |= (1 << WGM12);
+	TCCR1B &= ~(0 << WGM13);
 
-	// Interrupt Frequency: ? = f_IO / (1024*OCR1A)
-	// Set OCR1A appropriately for TOP to generate desired frequency.
-	// NOTE: This IS the toggle frequency.
-	printf("green period %d\n",G_green_period);
->	OCR1A = (uint16_t) (XXXX);
-	printf("Set OCR1A to %d\n",OCR1A);
->	printf("Initializing green clock to freq %dHz (period %d ms)\n",(int)(XXXX),G_green_period);	
+	//Set to toggle
+	TCCR1A |= (1 << COM1A0);
+	TCCR1A &= ~(0 << COM1A1);
+	
+	//Set the scaler to 1026
+	// CS00 = 1
+	// CS01 = 0
+	// CS02 = 1
+	TCCR1B |= (1 << CS10);
+	TCCR1B &= ~(0 << CS11);
+	TCCR1B |= (1 << CS12);
 
-	// A match to this will toggle the green LED.
-	// Regardless of its value (provided it is less than OCR1A), it will match at the frequency of timer 1.
+	//Start G_green_period at 1000 to avoid divide by 0
+	G_green_period = 1000;
+
+	OCR1A = (uint16_t)(20000000 / 1024) / (1000 / G_green_period);
+
+	//Set comp match so we can count toggles
 	OCR1B = 1;
-
-	//Enable output compare match interrupt on timer 1B
->
-*/
-
+	TIMSK1 |= (1 << OCIE1B);
 }
 
-/*
-//INTERRUPT HANDLERS
-> ISR(XXXX) {
-
-	// This is the Interrupt Service Routine for Timer0 (10ms clock used for scheduling red).
-	// Each time the TCNT count is equal to the OCR0 register, this interrupt is "fired".
+ISR(TIMER0_COMPA_vect) {
 
 	// Increment ticks
 	G_ms_ticks++;
@@ -120,4 +108,3 @@ void init_timers() {
 	if ( ( G_ms_ticks % G_red_period ) == 0 )
 		G_release_red = 1;
 }
-*/

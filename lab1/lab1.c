@@ -1,4 +1,4 @@
-#define ECHO2LCD
+#define ECHO2LCD 1
 
 #include <pololu/orangutan.h>
 
@@ -71,6 +71,7 @@ int main(void) {
 	init_menu();	// this is initialization of serial comm through USB
 	
 	clear();	// clear the LCD
+	lcd_goto_xy(0,0);
 
 	//enable interrupts
 	sei();
@@ -79,6 +80,7 @@ int main(void) {
 		/* BEGIN with a simple toggle using for-loops. No interrupt timers */
 
 		// toggle the LED. Increment a counter.
+		
 		LED_TOGGLE(RED);
 		G_red_toggles++;
 		length = sprintf( tempBuffer, "R toggles %d\r\n", G_red_toggles );
@@ -92,24 +94,23 @@ int main(void) {
 		for (i=0;i<100;i++) {
 			WAIT_10MS;
 		}
+		
 				
 		// ONCE THAT WORKS, Comment out the above and use a software timer
 		//	to "schedule" the RED LED toggle.
-/*
+		/*
 		if (G_release_red) {
 			LED_TOGGLE(RED);
 			G_red_toggles++;
 			G_release_red = 0; 
 		}
-*/
+		*/
 
 		// Whenever you are ready, add in the menu task.
 		// Think of this as an external interrupt "releasing" the task.
-/*
+
 		serial_check();
 		check_for_new_bytes_received();
-*/
 					
 	} //end while loop
 } //end main
-

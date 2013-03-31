@@ -25,20 +25,25 @@ void init_LEDs() {
 	int i;
 
 	// Clear all data direction ports
->
+	//DD_REG_RED = 0;
 
 	// Configure data direction as output
->
+	DD_REG_RED |= (1 << DDA2);
+	DD_REG_GREEN |= (1 << DDD5);
+	DD_REG_YELLOW |= (1 <<DDA0);
 
 	// Turn LEDs on to make sure they are working
->
-
+	LED_ON(RED);
+	LED_ON(GREEN);
+	LED_ON(YELLOW);
 	// leave on for 2 seconds
 	for (i=0;i<200;i++)
 		WAIT_10MS;
 
 	// Start all LEDs off
->
+	LED_OFF(RED);
+	LED_OFF(GREEN);
+	LED_OFF(YELLOW);
 
 	// clear toggle counters
 	G_green_toggles = 0;
@@ -47,7 +52,7 @@ void init_LEDs() {
 	
 }
 
-/*
+
 void set_toggle(char color, int ms) {
 
 		// check toggle ms is positive and multiple of 100
@@ -65,64 +70,62 @@ void set_toggle(char color, int ms) {
 		// If it is >0, set data direction to output.
 		if ((color=='R') || (color=='A')) {
 			if (ms==0)
->				
+				DD_REG_RED &= ~(1 << DDA2);			
 			else
->				
+				DD_REG_RED |= (1 << DDA2);
+
 			G_red_period = ms;
 		}
 
 		if ((color=='Y') || (color=='A')) {
 			if (ms==0)
->				
+				DD_REG_YELLOW &= ~(1 <<DDA0);				
 			else
->				
+				DD_REG_YELLOW |= (1 <<DDA0);
+
 			G_yellow_period = ms;
 		}
 
 		if ((color=='G') || (color=='A')) {
 			if (ms==0)
->				
+				DD_REG_GREEN &= ~(1 << DDD5);					
 			else
->				
+				DD_REG_GREEN |= (1 << DDD5);				
 
 			// green has a limit on its period.
 			if ( ms > 4000) ms = 4000;
+
 			G_green_period = ms;
 			
 			// set the OCR1A (TOP) to get (approximately) the requested frequency.
 			if ( ms > 0 ) {
->				OCR1A = 
->				printf("Green to toggle at freq %dHz (period %d ms)\n", XXXXX ,G_green_period);	
+				OCR1A = (uint16_t)(20000000 / 1024) / (1000 / G_green_period);	
 			}
  		}
 }
-*/
 
-/* 
 // INTERRUPT Names are defined in iom1284p.h
 
 // INTERRUPT HANDLER for yellow LED
-> ISR(XXXX) {
+ISR(TIMER3_COMPA_vect) {
 
 	// This the Interrupt Service Routine for Toggling the yellow LED.
 	// Each time the TCNT count is equal to the OCRxx register, this interrupt is enabled.
 	// At creation of this file, it was initialized to interrupt every 100ms (10Hz).
 	//
 	// Increment ticks. If it is time, toggle YELLOW and increment toggle counter.
->
->
->
-
+	G_yellow_ticks++;
+	
+	if(((G_yellow_ticks * 10) % G_yellow_period) == 0) {
+		G_yellow_toggles++;
+		LED_TOGGLE(YELLOW);
+	}
 }
 
 // INTERRUPT HANDLER for green LED
-> ISR(XXXX) {
-
+ISR(TIMER1_COMPB_vect) {
 	// This the Interrupt Service Routine for tracking green toggles. The toggling is done in hardware.
 	// Each time the TCNT count is equal to the OCRxx register, this interrupt is enabled.
 	// This interrupts at the user-specified frequency for the green LED.
-	
 	G_green_toggles++;
 }
-
-*/

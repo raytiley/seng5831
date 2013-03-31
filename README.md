@@ -15,8 +15,16 @@ This demonstrates exactly why you asked us not enter in any menu commands during
 
 ##Question 2
 
-Again timed with an iPhone all the outputs were within one toggle of each other.
+I performed the experiment twice both times using an iPhone as a stop watch. Both trials produced toggle counts that were within one of each other.
 
+*Trial 1*
 ```terminal
 Toggles R:59 G:60 Y:59
 ```
+
+*Trial 2*
+```terminal
+Toggles R:59 G:60 Y:60
+```
+
+##Question 3

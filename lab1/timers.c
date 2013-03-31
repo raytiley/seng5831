@@ -89,9 +89,6 @@ void init_timers() {
 	TCCR1B &= ~(0 << CS11);
 	TCCR1B |= (1 << CS12);
 
-	//Start G_green_period at 1000 to avoid divide by 0
-	G_green_period = 1000;
-
 	OCR1A = (uint16_t)(20000000 / 1024) / (1000 / G_green_period);
 
 	//Set comp match so we can count toggles

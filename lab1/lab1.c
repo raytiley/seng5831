@@ -63,8 +63,10 @@ int main(void) {
 	// Used to print to serial comm window
 	char tempBuffer[32];
 	int length = 0;
-	
+	clear();
 	// Initialization here.
+	//Initialize all periods to same value. Makes experimenting easier when menu doesn't work
+	G_green_period = G_yellow_period = G_red_period = 500;
 	lcd_init_printf();	// required if we want to use printf() for LCD printing
 	init_LEDs();
 	init_timers();
@@ -98,7 +100,7 @@ int main(void) {
 				
 		// ONCE THAT WORKS, Comment out the above and use a software timer
 		//	to "schedule" the RED LED toggle.
-		
+
 		if (G_release_red) {
 			LED_TOGGLE(RED);
 			G_red_toggles++;

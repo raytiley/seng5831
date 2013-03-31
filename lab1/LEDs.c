@@ -20,8 +20,10 @@ extern uint32_t G_red_toggles;
 extern uint32_t G_green_toggles;
 extern uint32_t G_yellow_toggles;
 
-void init_LEDs() {
+uint32_t G_count;
 
+void init_LEDs() {
+	print("booting...");
 	int i;
 
 	// Clear all data direction ports
@@ -49,6 +51,8 @@ void init_LEDs() {
 	G_green_toggles = 0;
 	G_red_toggles = 0;
 	G_yellow_toggles = 0;
+
+	clear();
 	
 }
 
@@ -108,24 +112,41 @@ void set_toggle(char color, int ms) {
 
 // INTERRUPT HANDLER for yellow LED
 ISR(TIMER3_COMPA_vect) {
-
+	//sei();
 	// This the Interrupt Service Routine for Toggling the yellow LED.
 	// Each time the TCNT count is equal to the OCRxx register, this interrupt is enabled.
 	// At creation of this file, it was initialized to interrupt every 100ms (10Hz).
 	//
 	// Increment ticks. If it is time, toggle YELLOW and increment toggle counter.
-	G_yellow_ticks++;
 	
+	G_yellow_ticks++;
+
 	if(((G_yellow_ticks * 10) % G_yellow_period) == 0) {
 		G_yellow_toggles++;
 		LED_TOGGLE(YELLOW);
 	}
+	
+	/*
+	for (G_count=0;G_count<51;G_count++) {
+			WAIT_10MS;
+	}
+	*/
+
 }
 
 // INTERRUPT HANDLER for green LED
 ISR(TIMER1_COMPB_vect) {
+	//sei();
 	// This the Interrupt Service Routine for tracking green toggles. The toggling is done in hardware.
 	// Each time the TCNT count is equal to the OCRxx register, this interrupt is enabled.
 	// This interrupts at the user-specified frequency for the green LED.
 	G_green_toggles++;
+
+	/*
+	for (G_count=0;G_count<51;G_count++) {
+			WAIT_10MS;
+	}
+	*/
+	
+
 }
